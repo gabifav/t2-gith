@@ -1,108 +1,548 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Morning Meeting 🤍</title>
-  <link rel="apple-touch-icon" href="icon3.png">
-<style>
-body {
-  font-family: Arial;
-  background: #f6f6fb;
-  text-align: center;
-  padding: 20px;
-  margin: 0;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Morning Meeting</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f6fb;
+      color: #222;
+      padding: 16px;
+    }
 
-.slide {
-  display: none;
-}
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
+    }
 
-.active {
-  display: block;
-}
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
 
-h1 {
-  font-size: 28px;
-}
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
 
-p {
-  font-size: 22px;
-}
+    .small {
+      color: #666;
+      font-size: 14px;
+    }
 
-button {
-  margin: 10px;
-  padding: 14px 20px;
-  font-size: 18px;
-  border: none;
-  border-radius: 12px;
-  background: #ddd;
-  cursor: pointer;
-}
-</style>
+    .meeting-card {
+      background: white;
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      border: 2px solid transparent;
+    }
+
+    .emoji {
+      font-size: 54px;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .slide-title {
+      font-size: 34px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .slide-body {
+      font-size: 24px;
+      line-height: 1.45;
+      text-align: center;
+      white-space: pre-wrap;
+    }
+
+    .slide-footer {
+      text-align: center;
+      font-size: 16px;
+      color: #666;
+    }
+
+    .progress {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .star {
+      font-size: 24px;
+      opacity: 0.35;
+      transition: 0.2s ease;
+    }
+
+    .star.active {
+      opacity: 1;
+      transform: scale(1.06);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 52px;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-back { background: #ececec; }
+    .btn-speak { background: #e3edff; }
+    .btn-next { background: #dff6e6; }
+    .btn-admin { background: #222; color: white; font-size: 15px; padding: 10px 14px; min-height: auto; }
+    .btn-save { background: #222; color: white; }
+    .btn-delete { background: #ffe3e3; }
+    .btn-secondary { background: #efefef; }
+
+    .admin-panel {
+      display: none;
+      margin-top: 18px;
+      background: white;
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    .admin-panel.show {
+      display: block;
+    }
+
+    .admin-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 2px solid #ddd;
+      font-size: 16px;
+      background: white;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .admin-row {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-actions {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .slide-list {
+      margin-top: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .slide-item {
+      background: #f7f7fb;
+      border-radius: 16px;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .slide-item-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: #ececff;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 700px) {
+      .slide-title { font-size: 28px; }
+      .slide-body { font-size: 21px; }
+      .controls, .admin-actions, .admin-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <h1>🌞 Morning Meeting</h1>
+        <div class="small" id="todayText"></div>
+      </div>
+      <button class="btn-admin" id="adminToggleBtn">Staff Admin</button>
+    </div>
 
-<h1>Good Morning 🤍</h1>
+    <div class="meeting-card">
+      <div>
+        <div class="progress" id="progress"></div>
+        <div class="emoji" id="slideEmoji">🌟</div>
+        <div class="slide-title" id="slideTitle">Welcome</div>
+        <div class="slide-body" id="slideBody">Let’s get ready for the day.</div>
+      </div>
 
-<div id="slides">
+      <div>
+        <div class="slide-footer" id="slideFooter">Card 1 of 5</div>
+        <div class="controls">
+          <button class="btn-back" id="backBtn">← Back</button>
+          <button class="btn-speak" id="speakBtn">🔊 Read Aloud</button>
+          <button class="btn-next" id="nextBtn">Next →</button>
+        </div>
+      </div>
+    </div>
 
-  <div class="slide active">
-    <p id="date"></p>
+    <div class="admin-panel" id="adminPanel">
+      <h2 style="margin-top:0;">Staff Editor</h2>
+      <div class="small">This password lock is only a simple editor lock for shared use. It is not high-security.</div>
+
+      <div class="admin-grid" style="margin-top:14px;">
+        <div class="admin-row">
+          <div>
+            <label for="slideSelect">Edit slide</label>
+            <select id="slideSelect"></select>
+          </div>
+          <div>
+            <label for="emojiInput">Emoji</label>
+            <input id="emojiInput" type="text" placeholder="🌟" />
+          </div>
+        </div>
+
+        <div>
+          <label for="titleInput">Title</label>
+          <input id="titleInput" type="text" placeholder="Welcome" />
+        </div>
+
+        <div>
+          <label for="bodyInput">Message</label>
+          <textarea id="bodyInput" placeholder="Write the morning meeting message here..."></textarea>
+        </div>
+
+        <div class="admin-actions">
+          <button class="btn-save" id="saveSlideBtn">Save Slide</button>
+          <button class="btn-secondary" id="newSlideBtn">Add New Slide</button>
+          <button class="btn-delete" id="deleteSlideBtn">Delete Slide</button>
+        </div>
+
+        <div>
+          <label for="passwordInput">Change admin password</label>
+          <input id="passwordInput" type="text" placeholder="admin" />
+          <div class="note">Default password is <strong>admin</strong>. Change it here if you want.</div>
+        </div>
+
+        <button class="btn-save" id="savePasswordBtn">Save Password</button>
+
+        <div class="slide-list" id="slideList"></div>
+      </div>
+    </div>
   </div>
 
-  <div class="slide">
-    <p>Today we will:</p>
-    <p>• Pack bags</p>
-    <p>• Check labels</p>
-    <p>• Help each other</p>
-  </div>
+  <script>
+    const defaultSlides = [
+      {
+        emoji: "👋",
+        title: "Welcome",
+        body: "Good morning everyone.\nLet’s get ready for a good day."
+      },
+      {
+        emoji: "📅",
+        title: "Today",
+        body: "Today we will check in,\nlook at our plan,\nand get started together."
+      },
+      {
+        emoji: "🎯",
+        title: "Focus",
+        body: "Today’s focus is:\ntry your best,\nask for help if you need it,\nand keep going."
+      },
+      {
+        emoji: "🙂",
+        title: "Check In",
+        body: "How are you feeling today?\nHappy, tired, calm, nervous,\nor something else?"
+      },
+      {
+        emoji: "🚀",
+        title: "Let’s Begin",
+        body: "You’re ready.\nLet’s start the day."
+      }
+    ];
 
-  <div class="slide">
-    <p>Focus for today:</p>
-    <p><b>Take your time and check carefully</b></p>
-  </div>
+    function safeParse(key, fallback) {
+      try {
+        const value = JSON.parse(localStorage.getItem(key));
+        return value ?? fallback;
+      } catch {
+        return fallback;
+      }
+    }
 
-  <div class="slide">
-    <p>How are you feeling today?</p>
-    <p>🙂 😐 😴 😟</p>
-  </div>
+    let slides = safeParse("morningMeetingSlides", defaultSlides);
+    if (!Array.isArray(slides) || slides.length === 0) slides = defaultSlides;
 
-  <div class="slide">
-    <p>Let’s begin!</p>
-  </div>
+    let adminPassword = localStorage.getItem("morningMeetingPassword") || "admin";
+    let currentSlide = 0;
+    let adminUnlocked = false;
 
-</div>
+    const todayText = document.getElementById("todayText");
+    const slideEmoji = document.getElementById("slideEmoji");
+    const slideTitle = document.getElementById("slideTitle");
+    const slideBody = document.getElementById("slideBody");
+    const slideFooter = document.getElementById("slideFooter");
+    const progress = document.getElementById("progress");
 
-<br>
+    const adminToggleBtn = document.getElementById("adminToggleBtn");
+    const adminPanel = document.getElementById("adminPanel");
 
-<button onclick="prev()">← Back</button>
-<button onclick="next()">Next →</button>
+    const slideSelect = document.getElementById("slideSelect");
+    const emojiInput = document.getElementById("emojiInput");
+    const titleInput = document.getElementById("titleInput");
+    const bodyInput = document.getElementById("bodyInput");
+    const passwordInput = document.getElementById("passwordInput");
+    const saveSlideBtn = document.getElementById("saveSlideBtn");
+    const newSlideBtn = document.getElementById("newSlideBtn");
+    const deleteSlideBtn = document.getElementById("deleteSlideBtn");
+    const savePasswordBtn = document.getElementById("savePasswordBtn");
+    const slideList = document.getElementById("slideList");
 
-<script>
-let current = 0;
-const slides = document.querySelectorAll(".slide");
+    function setToday() {
+      const now = new Date();
+      todayText.textContent = now.toLocaleDateString(undefined, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+    }
 
-function showSlide(index) {
-  slides.forEach(s => s.classList.remove("active"));
-  slides[index].classList.add("active");
-}
+    function renderProgress() {
+      progress.innerHTML = "";
+      slides.forEach((_, i) => {
+        const star = document.createElement("div");
+        star.className = "star" + (i === currentSlide ? " active" : "");
+        star.textContent = "⭐";
+        progress.appendChild(star);
+      });
+    }
 
-function next() {
-  current = (current + 1) % slides.length;
-  showSlide(current);
-}
+    function renderSlide() {
+      const slide = slides[currentSlide];
+      slideEmoji.textContent = slide.emoji || "🌟";
+      slideTitle.textContent = slide.title || "Untitled";
+      slideBody.textContent = slide.body || "";
+      slideFooter.textContent = `Card ${currentSlide + 1} of ${slides.length}`;
+      renderProgress();
+    }
 
-function prev() {
-  current = (current - 1 + slides.length) % slides.length;
-  showSlide(current);
-}
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % slides.length;
+      renderSlide();
+    }
 
-// date
-const today = new Date();
-document.getElementById("date").innerText =
-  today.toDateString();
-</script>
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+      renderSlide();
+    }
 
+    function speakCurrentSlide() {
+      if (!("speechSynthesis" in window)) {
+        alert("Read aloud is not supported on this device.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const text = `${slides[currentSlide].title}. ${slides[currentSlide].body}`;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.92;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function saveSlides() {
+      localStorage.setItem("morningMeetingSlides", JSON.stringify(slides));
+    }
+
+    function renderAdminSelect() {
+      slideSelect.innerHTML = "";
+      slides.forEach((slide, i) => {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `${i + 1}. ${slide.title || "Untitled"}`;
+        slideSelect.appendChild(option);
+      });
+      slideSelect.value = String(currentSlide);
+    }
+
+    function loadSlideIntoEditor(index) {
+      const slide = slides[index];
+      emojiInput.value = slide.emoji || "";
+      titleInput.value = slide.title || "";
+      bodyInput.value = slide.body || "";
+    }
+
+    function renderSlideList() {
+      slideList.innerHTML = "";
+      slides.forEach((slide, i) => {
+        const item = document.createElement("div");
+        item.className = "slide-item";
+        item.innerHTML = `
+          <div class="slide-item-top">
+            <strong>${slide.emoji || "🌟"} ${slide.title || "Untitled"}</strong>
+            <span class="pill">Slide ${i + 1}</span>
+          </div>
+          <div>${(slide.body || "").replace(/\n/g, "<br>")}</div>
+        `;
+        slideList.appendChild(item);
+      });
+    }
+
+    function refreshAdminUI() {
+      renderAdminSelect();
+      loadSlideIntoEditor(currentSlide);
+      renderSlideList();
+      passwordInput.value = adminPassword;
+    }
+
+    function openAdmin() {
+      adminPanel.classList.add("show");
+      refreshAdminUI();
+    }
+
+    function closeAdmin() {
+      adminPanel.classList.remove("show");
+    }
+
+    adminToggleBtn.addEventListener("click", () => {
+      if (adminUnlocked) {
+        if (adminPanel.classList.contains("show")) {
+          closeAdmin();
+        } else {
+          openAdmin();
+        }
+        return;
+      }
+
+      const entered = prompt("Enter staff password");
+      if (entered === adminPassword) {
+        adminUnlocked = true;
+        openAdmin();
+      } else if (entered !== null) {
+        alert("Incorrect password");
+      }
+    });
+
+    slideSelect.addEventListener("change", () => {
+      currentSlide = Number(slideSelect.value);
+      loadSlideIntoEditor(currentSlide);
+      renderSlide();
+    });
+
+    saveSlideBtn.addEventListener("click", () => {
+      slides[currentSlide] = {
+        emoji: emojiInput.value.trim() || "🌟",
+        title: titleInput.value.trim() || "Untitled",
+        body: bodyInput.value.trim() || ""
+      };
+      saveSlides();
+      renderSlide();
+      refreshAdminUI();
+      alert("Slide saved");
+    });
+
+    newSlideBtn.addEventListener("click", () => {
+      slides.push({
+        emoji: "✨",
+        title: "New Slide",
+        body: "Add your message here."
+      });
+      currentSlide = slides.length - 1;
+      saveSlides();
+      renderSlide();
+      refreshAdminUI();
+    });
+
+    deleteSlideBtn.addEventListener("click", () => {
+      if (slides.length === 1) {
+        alert("You need at least one slide.");
+        return;
+      }
+      const ok = confirm("Delete this slide?");
+      if (!ok) return;
+
+      slides.splice(currentSlide, 1);
+      if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+      saveSlides();
+      renderSlide();
+      refreshAdminUI();
+    });
+
+    savePasswordBtn.addEventListener("click", () => {
+      const newPassword = passwordInput.value.trim();
+      if (!newPassword) {
+        alert("Password cannot be blank.");
+        return;
+      }
+      adminPassword = newPassword;
+      localStorage.setItem("morningMeetingPassword", adminPassword);
+      alert("Password saved");
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", nextSlide);
+    document.getElementById("backBtn").addEventListener("click", prevSlide);
+    document.getElementById("speakBtn").addEventListener("click", speakCurrentSlide);
+
+    setToday();
+    renderSlide();
+  </script>
 </body>
 </html>
