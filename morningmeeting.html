@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning Meeting 🤍</title>
+  <link rel="apple-touch-icon" href="icon3.png">
+<style>
+body {
+  font-family: Arial;
+  background: #f6f6fb;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+.slide {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+p {
+  font-size: 22px;
+}
+
+button {
+  margin: 10px;
+  padding: 14px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 12px;
+  background: #ddd;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Good Morning 🤍</h1>
+
+<div id="slides">
+
+  <div class="slide active">
+    <p id="date"></p>
+  </div>
+
+  <div class="slide">
+    <p>Today we will:</p>
+    <p>• Pack bags</p>
+    <p>• Check labels</p>
+    <p>• Help each other</p>
+  </div>
+
+  <div class="slide">
+    <p>Focus for today:</p>
+    <p><b>Take your time and check carefully</b></p>
+  </div>
+
+  <div class="slide">
+    <p>How are you feeling today?</p>
+    <p>🙂 😐 😴 😟</p>
+  </div>
+
+  <div class="slide">
+    <p>Let’s begin!</p>
+  </div>
+
+</div>
+
+<br>
+
+<button onclick="prev()">← Back</button>
+<button onclick="next()">Next →</button>
+
+<script>
+let current = 0;
+const slides = document.querySelectorAll(".slide");
+
+function showSlide(index) {
+  slides.forEach(s => s.classList.remove("active"));
+  slides[index].classList.add("active");
+}
+
+function next() {
+  current = (current + 1) % slides.length;
+  showSlide(current);
+}
+
+function prev() {
+  current = (current - 1 + slides.length) % slides.length;
+  showSlide(current);
+}
+
+// date
+const today = new Date();
+document.getElementById("date").innerText =
+  today.toDateString();
+</script>
+
+</body>
+</html>
