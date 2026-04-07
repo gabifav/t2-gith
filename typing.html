@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="apple-touch-icon" href="icon2.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typing Practice 🤍</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f6f6fb;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+.word {
+  font-size: 44px;
+  margin: 20px 0;
+  font-weight: bold;
+}
+
+input {
+  font-size: 28px;
+  padding: 14px;
+  width: 260px;
+  text-align: center;
+  border-radius: 14px;
+  border: 2px solid #ccc;
+}
+
+button {
+  margin: 8px;
+  padding: 12px 16px;
+  font-size: 18px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.check { background: #dff6e6; }
+.next { background: #e3edff; }
+.say { background: #f0f0f0; }
+.back { background: #ddd; }
+
+.feedback {
+  margin-top: 15px;
+  font-size: 22px;
+  min-height: 30px;
+}
+
+.sound-btn {
+  background: #222;
+  color: white;
+  width: 100%;
+  max-width: 300px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Type the word</h1>
+
+<button class="sound-btn" onclick="enableSound()">🔊 Enable Sound</button>
+
+<div class="word" id="word">apple</div>
+
+<input id="input" placeholder="type here" autocomplete="off">
+
+<br>
+
+<button class="check" onclick="check()">Check</button>
+<button class="next" onclick="nextWord()">Next</button>
+<button class="say" onclick="sayWord()">Say Word</button>
+
+<div class="feedback" id="feedback"></div>
+
+<br>
+
+<a href="index.html">
+  <button class="back">← Back</button>
+</a>
+
+<script>
+const words = ["apple","dog","cat","milk","train","house","book","sun","pen","bag"];
+let current = 0;
+let lastValue = "";
+let soundEnabled = false;
+
+function speak(text) {
+  if (!soundEnabled) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 0.9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utter);
+}
+
+function enableSound() {
+  soundEnabled = true;
+  alert("Sound enabled!");
+}
+
+function sayWord() {
+  speak(words[current]);
+}
+
+function check() {
+  const input = document.getElementById("input").value.toLowerCase();
+  const correct = words[current];
+
+  speak(input);
+
+  if (input === correct) {
+    document.getElementById("feedback").innerText = "Correct! 🎉";
+    setTimeout(nextWord, 1000);
+  } else if (input === "") {
+    document.getElementById("feedback").innerText = "Type something 🤍";
+  } else {
+    document.getElementById("feedback").innerText = "Almost, try again 🤍";
+  }
+}
+
+function nextWord() {
+  current = (current + 1) % words.length;
+  document.getElementById("word").innerText = words[current];
+  document.getElementById("input").value = "";
+  document.getElementById("feedback").innerText = "";
+  lastValue = "";
+}
+
+document.getElementById("input").addEventListener("input", function() {
+  const value = this.value;
+
+  if (value.length > lastValue.length) {
+    const letter = value.slice(-1);
+    speak(letter);
+  }
+
+  lastValue = value;
+});
+
+document.getElementById("input").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") check();
+});
+</script>
+
+</body>
+</html>
