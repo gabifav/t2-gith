@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="apple-touch-icon" href="icon2.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Typing Practice 🤍</title>
 
@@ -25,50 +24,68 @@ h1 {
 }
 
 input {
-  font-size: 28px;
-  padding: 14px;
+  font-size: 26px;
+  padding: 12px;
   width: 260px;
   text-align: center;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 2px solid #ccc;
 }
 
 button {
-  margin: 8px;
-  padding: 12px 16px;
-  font-size: 18px;
+  margin: 6px;
+  padding: 12px;
+  font-size: 16px;
   border: none;
   border-radius: 12px;
   cursor: pointer;
 }
 
-.check { background: #dff6e6; }
-.next { background: #e3edff; }
-.say { background: #f0f0f0; }
-.back { background: #ddd; }
-
 .feedback {
   margin-top: 15px;
-  font-size: 22px;
+  font-size: 20px;
   min-height: 30px;
 }
 
-.sound-btn {
-  background: #222;
-  color: white;
-  width: 100%;
-  max-width: 300px;
+.sound-btn { background: #222; color: white; }
+.check { background: #dff6e6; }
+.next { background: #e3edff; }
+.say { background: #eee; }
+.back { background: #ddd; }
+
+select {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Type the word</h1>
+<h1>⌨️ Typing Practice</h1>
 
 <button class="sound-btn" onclick="enableSound()">🔊 Enable Sound</button>
 
-<div class="word" id="word">apple</div>
+<br><br>
+
+<select id="category" onchange="changeCategory()">
+  <option value="names">Names</option>
+  <option value="food">Food</option>
+  <option value="animals">Animals</option>
+  <option value="places">Places</option>
+  <option value="custom">My Words</option>
+</select>
+
+<br>
+
+<input id="newWord" placeholder="add word">
+<button onclick="addWord()">Add</button>
+
+<div id="customList"></div>
+
+<div class="word" id="word">hello</div>
 
 <input id="input" placeholder="type here" autocomplete="off">
 
@@ -87,7 +104,16 @@ button {
 </a>
 
 <script>
-const words = ["apple","dog","cat","milk","train","house","book","sun","pen","bag"];
+const wordBanks = {
+  names: ["sian","maddy","gabi","alex","emma"],
+  food: ["apple","milk","bread","rice","banana"],
+  animals: ["dog","cat","bird","fish","lion"],
+  places: ["home","school","park","shop","bus"],
+  custom: JSON.parse(localStorage.getItem("customWords")) || []
+};
+
+let currentCategory = "names";
+let words = wordBanks[currentCategory];
 let current = 0;
 let lastValue = "";
 let soundEnabled = false;
@@ -105,19 +131,73 @@ function enableSound() {
   alert("Sound enabled!");
 }
 
-function sayWord() {
-  speak(words[current]);
+function updateWord() {
+  document.getElementById("word").innerText = words[current] || "(no words)";
+}
+
+function changeCategory() {
+  currentCategory = document.getElementById("category").value;
+  words = wordBanks[currentCategory];
+
+  if (!words.length) words = ["(no words yet)"];
+
+  current = 0;
+  updateWord();
+  renderCustomList();
+}
+
+function addWord() {
+  const input = document.getElementById("newWord");
+  const word = input.value.trim().toLowerCase();
+
+  if (!word) return;
+
+  wordBanks.custom.push(word);
+  localStorage.setItem("customWords", JSON.stringify(wordBanks.custom));
+
+  input.value = "";
+
+  if (currentCategory === "custom") {
+    words = wordBanks.custom;
+    current = words.length - 1;
+    updateWord();
+  }
+
+  renderCustomList();
+}
+
+function deleteWord(index) {
+  wordBanks.custom.splice(index, 1);
+  localStorage.setItem("customWords", JSON.stringify(wordBanks.custom));
+
+  changeCategory();
+}
+
+function renderCustomList() {
+  const list = document.getElementById("customList");
+
+  if (currentCategory !== "custom") {
+    list.innerHTML = "";
+    return;
+  }
+
+  list.innerHTML = wordBanks.custom.map((w, i) => `
+    <div style="margin:4px;">
+      ${w}
+      <button onclick="deleteWord(${i})">x</button>
+    </div>
+  `).join("");
 }
 
 function check() {
   const input = document.getElementById("input").value.toLowerCase();
-  const correct = words[current];
+  const correct = words[current].toLowerCase();
 
   speak(input);
 
   if (input === correct) {
     document.getElementById("feedback").innerText = "Correct! 🎉";
-    setTimeout(nextWord, 1000);
+    setTimeout(nextWord, 900);
   } else if (input === "") {
     document.getElementById("feedback").innerText = "Type something 🤍";
   } else {
@@ -127,18 +207,21 @@ function check() {
 
 function nextWord() {
   current = (current + 1) % words.length;
-  document.getElementById("word").innerText = words[current];
+  updateWord();
   document.getElementById("input").value = "";
   document.getElementById("feedback").innerText = "";
   lastValue = "";
+}
+
+function sayWord() {
+  speak(words[current]);
 }
 
 document.getElementById("input").addEventListener("input", function() {
   const value = this.value;
 
   if (value.length > lastValue.length) {
-    const letter = value.slice(-1);
-    speak(letter);
+    speak(value.slice(-1));
   }
 
   lastValue = value;
@@ -147,6 +230,9 @@ document.getElementById("input").addEventListener("input", function() {
 document.getElementById("input").addEventListener("keydown", function(e) {
   if (e.key === "Enter") check();
 });
+
+updateWord();
+renderCustomList();
 </script>
 
 </body>
