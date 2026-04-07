@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>SLES Packing Tracker</title>
+  <link rel="apple-touch-icon" href="icon.png">
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f6fb;
+      color: #222;
+    }
+
+    body {
+      padding: 14px 14px 120px 14px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 10px 0 6px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 14px;
+      font-size: 15px;
+    }
+
+    .sound-btn {
+      width: 100%;
+      max-width: 850px;
+      display: block;
+      margin: 0 auto 14px auto;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      background: #222;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .sound-btn.enabled {
+      background: #dff6e6;
+      color: #1f7a3f;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 5px 16px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card.done-card {
+      border-color: #7fd69a;
+      box-shadow: 0 8px 20px rgba(127, 214, 154, 0.25);
+    }
+
+    .card.pop {
+      animation: popCard 0.45s ease;
+    }
+
+    @keyframes popCard {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .status {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #efefef;
+      white-space: nowrap;
+    }
+
+    .status.done {
+      background: #dff6e6;
+      color: #1f7a3f;
+    }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .fraction {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .total-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+    }
+
+    input[type="number"] {
+      width: 72px;
+      padding: 10px 8px;
+      border-radius: 12px;
+      border: 2px solid #ddd;
+      font-size: 16px;
+      text-align: center;
+      background: white;
+    }
+
+    .bar-bg {
+      width: 100%;
+      height: 22px;
+      background: #ececf3;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .g1 .bar  { background: #8e7dff; }
+    .g2 .bar  { background: #4aa8ff; }
+    .g3 .bar  { background: #49c27d; }
+    .g4 .bar  { background: #f0b429; }
+    .g5 .bar  { background: #ef6b8f; }
+    .g6a .bar { background: #9b59b6; }
+    .g6b .bar { background: #ff8c42; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    button.action {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 10px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      min-height: 48px;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    button.action:active {
+      transform: scale(0.98);
+    }
+
+    .plus  { background: #e3edff; }
+    .minus { background: #ffe3e3; }
+    .reset { background: #efefef; }
+
+    .bottom-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(246, 246, 251, 0.96);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #ddd;
+    }
+
+    .bottom-inner {
+      max-width: 850px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .save-btn,
+    .reset-all-btn {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .save-btn {
+      background: #222;
+      color: white;
+    }
+
+    .reset-all-btn {
+      background: #ddd;
+      color: #222;
+    }
+
+    .save-message {
+      text-align: center;
+      margin-top: 8px;
+      font-weight: 700;
+      color: #2f7f49;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      min-height: 20px;
+      font-size: 14px;
+    }
+
+    .save-message.show {
+      opacity: 1;
+    }
+
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 14px;
+      top: -20px;
+      opacity: 0.95;
+      z-index: 9999;
+      animation: fall linear forwards;
+      pointer-events: none;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 430px) {
+      h1 { font-size: 24px; }
+      .title { font-size: 20px; }
+      .fraction { font-size: 24px; }
+      button.action, .save-btn, .reset-all-btn {
+        font-size: 16px;
+        padding: 13px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📦 SLES Packing Tracker</h1>
+  <div class="subtitle">Tap +1 when a bag is finished</div>
+
+  <button id="soundButton" class="sound-btn" onclick="enableSound()">
+    🔊 Tap to Enable Sound
+  </button>
+
+  <div class="container" id="app"></div>
+
+  <div class="bottom-bar">
+    <div class="bottom-inner">
+      <button class="save-btn" onclick="saveData()">💾 Save</button>
+      <button class="reset-all-btn" onclick="resetAll()">Reset All</button>
+    </div>
+    <div class="save-message" id="saveMessage">Saved!</div>
+  </div>
+
+  <script>
+    const groupNames = ["1", "2", "3", "4", "5", "6A", "6B"];
+
+    const defaultGroups = [
+      { name: "1",  done: 0, total: 5, completedPlayed: false },
+      { name: "2",  done: 0, total: 8, completedPlayed: false },
+      { name: "3",  done: 0, total: 5, completedPlayed: false },
+      { name: "4",  done: 0, total: 5, completedPlayed: false },
+      { name: "5",  done: 0, total: 5, completedPlayed: false },
+      { name: "6A", done: 0, total: 5, completedPlayed: false },
+      { name: "6B", done: 0, total: 5, completedPlayed: false }
+    ];
+
+    let saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem("trackerData"));
+    } catch (e) {
+      saved = null;
+    }
+
+    let groups = Array.isArray(saved) ? saved : defaultGroups;
+
+    groups = groupNames.map((name, index) => {
+      const g = groups[index] || {};
+      const fallback = defaultGroups[index];
+      return {
+        name,
+        done: Number.isFinite(Number(g.done)) ? Number(g.done) : fallback.done,
+        total: Number.isFinite(Number(g.total)) ? Number(g.total) : fallback.total,
+        completedPlayed: !!g.completedPlayed
+      };
+    });
+
+    let audioCtx = null;
+    let soundEnabled = false;
+
+    function enableSound() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+      if (!AudioContextClass) {
+        alert("Sound is not supported on this device.");
+        return;
+      }
+
+      if (!audioCtx) {
+        audioCtx = new AudioContextClass();
+      }
+
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+
+      soundEnabled = true;
+
+      const btn = document.getElementById("soundButton");
+      btn.textContent = "✅ Sound Enabled";
+      btn.classList.add("enabled");
+    }
+
+    function groupClass(name) {
+      return "g" + String(name).toLowerCase();
+    }
+
+    function getPercent(done, total) {
+      if (total <= 0) return 0;
+      return Math.round((done / total) * 100);
+    }
+
+    function playDing() {
+      if (!audioCtx || !soundEnabled) return;
+
+      const now = audioCtx.currentTime;
+
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc1.type = "sine";
+      osc2.type = "triangle";
+
+      osc1.frequency.setValueAtTime(880, now);
+      osc2.frequency.setValueAtTime(1320, now + 0.06);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc1.start(now);
+      osc2.start(now + 0.06);
+      osc1.stop(now + 0.22);
+      osc2.stop(now + 0.35);
+    }
+
+    function launchConfetti() {
+      const colors = ["#8e7dff", "#4aa8ff", "#49c27d", "#f0b429", "#ef6b8f", "#ff8c42", "#9b59b6"];
+
+      for (let i = 0; i < 55; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti-piece";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = (2 + Math.random() * 1.5) + "s";
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 3800);
+      }
+    }
+
+    function maybeCelebrate(group, cardElement) {
+      const isDone = group.total > 0 && group.done === group.total;
+
+      if (isDone && !group.completedPlayed) {
+        group.completedPlayed = true;
+        playDing();
+        launchConfetti();
+
+        if (cardElement) {
+          cardElement.classList.remove("pop");
+          void cardElement.offsetWidth;
+          cardElement.classList.add("pop");
+        }
+      }
+
+      if (!isDone) {
+        group.completedPlayed = false;
+      }
+    }
+
+    function render() {
+      const app = document.getElementById("app");
+      app.innerHTML = "";
+
+      groups.forEach((group, index) => {
+        if (group.done < 0) group.done = 0;
+        if (group.done > group.total) group.done = group.total;
+
+        const percent = getPercent(group.done, group.total);
+        const isDone = group.total > 0 && group.done === group.total;
+
+        const card = document.createElement("div");
+        card.className = `card ${groupClass(group.name)} ${isDone ? "done-card" : ""}`;
+
+        card.innerHTML = `
+          <div class="top-row">
+            <div class="title">Group ${group.name}</div>
+            <div class="status ${isDone ? "done" : ""}">
+              ${isDone ? "DONE ✅" : "In Progress"}
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="fraction">${group.done}/${group.total}</div>
+            <div class="total-wrap">
+              <span>Total:</span>
+              <input
+                type="number"
+                inputmode="numeric"
+                min="0"
+                value="${group.total}"
+                onchange="updateTotal(${index}, this.value)"
+              />
+            </div>
+          </div>
+
+          <div class="bar-bg">
+            <div class="bar" style="width:${percent}%"></div>
+          </div>
+
+          <div class="controls">
+            <button class="action plus" onclick="changeDone(${index}, 1)">+1</button>
+            <button class="action minus" onclick="changeDone(${index}, -1)">-1</button>
+            <button class="action reset" onclick="resetGroup(${index})">Reset</button>
+          </div>
+        `;
+
+        app.appendChild(card);
+      });
+    }
+
+    function changeDone(index, amount) {
+      const group = groups[index];
+      group.done += amount;
+
+      if (group.done < 0) group.done = 0;
+      if (group.done > group.total) group.done = group.total;
+
+      render();
+      const cards = document.querySelectorAll(".card");
+      maybeCelebrate(group, cards[index]);
+    }
+
+    function updateTotal(index, value) {
+      const group = groups[index];
+      const total = parseInt(value, 10);
+
+      group.total = isNaN(total) || total < 0 ? 0 : total;
+
+      if (group.done > group.total) {
+        group.done = group.total;
+      }
+
+      render();
+    }
+
+    function resetGroup(index) {
+      groups[index].done = 0;
+      groups[index].completedPlayed = false;
+      render();
+    }
+
+    function resetAll() {
+      groups.forEach(group => {
+        group.done = 0;
+        group.completedPlayed = false;
+      });
+      render();
+    }
+
+    function saveData() {
+      localStorage.setItem("trackerData", JSON.stringify(groups));
+      const msg = document.getElementById("saveMessage");
+      msg.classList.add("show");
+      setTimeout(() => msg.classList.remove("show"), 1200);
+    }
+
+    render();
+  </script>
+</body>
+</html>
