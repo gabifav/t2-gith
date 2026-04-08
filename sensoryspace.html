@@ -398,14 +398,16 @@
 let noteIndex = 0;
 
 const driftNotes = [
-  261.63, // C4
-  293.66, // D4
-  329.63, // E4
-  392.00, // G4
-  440.00, // A4
-  523.25  // C5
+  261.63,
+  329.63,
+  392.00,
+  329.63,
+  293.66,
+  329.63,
+  392.00,
+  523.25
 ];
-
+    
 function ensureAudio() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) return null;
