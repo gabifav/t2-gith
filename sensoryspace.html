@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>Sensory Studio</title>
+    <link rel="apple-touch-icon" href="icon4.png">
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: #f6f6fb;
+      color: #222;
+      width: 100%;
+      height: 100%;
+    }
+
+    #app {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(180deg, #f9f9fd 0%, #eef2fb 100%);
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    #homeScreen {
+      padding: 18px;
+      overflow-y: auto;
+      touch-action: pan-y;
+    }
+
+    .home-wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 12px 0 8px;
+      font-size: 34px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 22px;
+      font-size: 16px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .mode-card {
+      border: none;
+      border-radius: 24px;
+      padding: 22px 18px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      cursor: pointer;
+      min-height: 140px;
+    }
+
+    .mode-card:active {
+      transform: scale(0.98);
+    }
+
+    .mode-emoji {
+      font-size: 38px;
+      margin-bottom: 10px;
+      line-height: 1;
+    }
+
+    .mode-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .mode-desc {
+      font-size: 15px;
+      color: #666;
+      line-height: 1.35;
+    }
+
+    #playScreen {
+      background: linear-gradient(180deg, #f8f9ff 0%, #edf3fb 100%);
+    }
+
+    #canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .left-panel,
+    .right-panel {
+      pointer-events: auto;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(8px);
+    }
+
+    button.ctrl {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 15px;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    button.ctrl:active {
+      transform: scale(0.97);
+    }
+
+    .bottom-bar {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 20;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .bottom-inner {
+      pointer-events: auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.84);
+      border-radius: 999px;
+      padding: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(8px);
+      max-width: min(95vw, 900px);
+    }
+
+    .hint {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 76px;
+      z-index: 15;
+      background: rgba(255, 255, 255, 0.82);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      color: #555;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+      max-width: calc(100vw - 24px);
+      text-align: center;
+    }
+
+    .progress-wrap {
+      min-width: 140px;
+    }
+
+    .progress-bar-bg {
+      width: 150px;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #8e7dff, #4aa8ff, #49c27d);
+      border-radius: 999px;
+      transition: width 0.2s ease;
+    }
+
+    @media (max-width: 700px) {
+      h1 {
+        font-size: 28px;
+      }
+
+      .mode-title {
+        font-size: 20px;
+      }
+
+      .mode-card {
+        min-height: 128px;
+      }
+
+      .hint {
+        top: 126px;
+        font-size: 13px;
+      }
+
+      .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .left-panel,
+      .right-panel {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="homeScreen" class="screen active">
+      <div class="home-wrap">
+        <h1>✨ Sensory Studio</h1>
+        <div class="subtitle">
+          Choose a calm mode to explore
+        </div>
+
+        <div class="mode-grid">
+          <button class="mode-card" onclick="startMode('trail')">
+            <div class="mode-emoji">🖍️</div>
+            <div class="mode-title">Trail Drawing</div>
+            <div class="mode-desc">Draw glowing lines that gently fade away.</div>
+          </button>
+
+          <button class="mode-card" onclick="startMode('ripples')">
+            <div class="mode-emoji">🌊</div>
+            <div class="mode-title">Ripple World</div>
+            <div class="mode-desc">Tap anywhere and soft ripples spread out.</div>
+          </button>
+
+          <button class="mode-card" onclick="startMode('drift')">
+            <div class="mode-emoji">☁️</div>
+            <div class="mode-title">Drift Mode</div>
+            <div class="mode-desc">Float and nudge shapes around the screen.</div>
+          </button>
+
+          <button class="mode-card" onclick="startMode('symmetry')">
+            <div class="mode-emoji">🪞</div>
+            <div class="mode-title">Symmetry Draw</div>
+            <div class="mode-desc">Draw on one side and watch it mirror.</div>
+          </button>
+
+          <button class="mode-card" onclick="startMode('breathe')">
+            <div class="mode-emoji">🫧</div>
+            <div class="mode-title">Breathe With Me</div>
+            <div class="mode-desc">Follow a slow breathing circle.</div>
+          </button>
+
+          <button class="mode-card" onclick="startMode('soak')">
+            <div class="mode-emoji">🎨</div>
+            <div class="mode-title">Colour Soak</div>
+            <div class="mode-desc">Tap to softly spread colour across the space.</div>
+          </button>
+
+          <button class="mode-card" onclick="startMode('focus')">
+            <div class="mode-emoji">🎯</div>
+            <div class="mode-title">Focus Dot</div>
+            <div class="mode-desc">Watch and follow one gentle moving dot.</div>
+          </button>
+
+          <button class="mode-card" onclick="startMode('groupTap')">
+            <div class="mode-emoji">🤝</div>
+            <div class="mode-title">Group Tap</div>
+            <div class="mode-desc">Every tap creates a shared reaction together.</div>
+          </button>
+
+          <button class="mode-card" onclick="startMode('teamProgress')">
+            <div class="mode-emoji">⭐</div>
+            <div class="mode-title">Team Progress</div>
+            <div class="mode-desc">Each tap fills a shared progress bar.</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="playScreen" class="screen">
+      <canvas id="canvas"></canvas>
+
+      <div class="top-bar">
+        <div class="left-panel">
+          <button class="ctrl" onclick="goHome()">← Home</button>
+          <div class="pill" id="modeLabel">Mode</div>
+          <div class="pill" id="modeHintLabel">Hint</div>
+        </div>
+
+        <div class="right-panel">
+          <button class="ctrl" onclick="resetScene()">Reset</button>
+          <button class="ctrl" onclick="toggleSpeed()" id="speedBtn">Slow</button>
+          <button class="ctrl" onclick="toggleSound()" id="soundBtn">🔇 Sound Off</button>
+        </div>
+      </div>
+
+      <div class="hint" id="hintText">Tap or drag to begin</div>
+
+      <div class="bottom-bar">
+        <div class="bottom-inner" id="bottomInner">
+          <div class="pill progress-wrap" id="progressWrap" style="display:none;">
+            Team Progress
+            <div class="progress-bar-bg">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const homeScreen = document.getElementById("homeScreen");
+    const playScreen = document.getElementById("playScreen");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const modeLabel = document.getElementById("modeLabel");
+    const modeHintLabel = document.getElementById("modeHintLabel");
+    const hintText = document.getElementById("hintText");
+    const speedBtn = document.getElementById("speedBtn");
+    const soundBtn = document.getElementById("soundBtn");
+    const progressWrap = document.getElementById("progressWrap");
+    const progressBar = document.getElementById("progressBar");
+
+    let w = 0;
+    let h = 0;
+    let animationId = null;
+    let currentMode = null;
+    let speedMode = "slow";
+    let soundOn = false;
+
+    let pointerDown = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    let particles = [];
+    let ripples = [];
+    let drifters = [];
+    let soakBlobs = [];
+    let dots = [];
+    let trails = [];
+    let progressValue = 0;
+    let focusDot = { x: 0, y: 0, vx: 1.2, vy: 0.9, r: 16 };
+    let breathePhase = 0;
+
+    const palette = [
+      "#8e7dff",
+      "#4aa8ff",
+      "#49c27d",
+      "#f0b429",
+      "#ef6b8f",
+      "#9b59b6",
+      "#7ed6df",
+      "#ffa94d"
+    ];
+
+    const softPalette = [
+      "rgba(142,125,255,0.18)",
+      "rgba(74,168,255,0.18)",
+      "rgba(73,194,125,0.18)",
+      "rgba(240,180,41,0.18)",
+      "rgba(239,107,143,0.18)",
+      "rgba(155,89,182,0.18)"
+    ];
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      if (!focusDot.x) {
+        focusDot.x = w / 2;
+        focusDot.y = h / 2;
+      }
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function randomColor(alpha = 1) {
+      const hex = palette[Math.floor(Math.random() * palette.length)];
+      if (alpha === 1) return hex;
+      const rgb = hexToRgb(hex);
+      return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+    }
+
+    function hexToRgb(hex) {
+      const n = hex.replace("#", "");
+      return {
+        r: parseInt(n.substring(0, 2), 16),
+        g: parseInt(n.substring(2, 4), 16),
+        b: parseInt(n.substring(4, 6), 16)
+      };
+    }
+
+    function clearAllArrays() {
+      particles = [];
+      ripples = [];
+      drifters = [];
+      soakBlobs = [];
+      dots = [];
+      trails = [];
+      progressValue = 0;
+      progressBar.style.width = "0%";
+      breathePhase = 0;
+      focusDot = {
+        x: w / 2,
+        y: h / 2,
+        vx: speedMode === "slow" ? 1.1 : 2.2,
+        vy: speedMode === "slow" ? 0.85 : 1.6,
+        r: 16
+      };
+    }
+
+    function setModeUI(mode) {
+      const labels = {
+        trail: ["Trail Drawing", "Drag to draw soft glowing lines"],
+        ripples: ["Ripple World", "Tap anywhere to make ripples"],
+        drift: ["Drift Mode", "Drag shapes gently around"],
+        symmetry: ["Symmetry Draw", "Draw on one side, mirrored on the other"],
+        breathe: ["Breathe With Me", "Watch the circle grow and shrink"],
+        soak: ["Colour Soak", "Tap to softly spread colour"],
+        focus: ["Focus Dot", "Follow the dot with your eyes"],
+        groupTap: ["Group Tap", "Every tap creates a shared burst"],
+        teamProgress: ["Team Progress", "Each tap fills the team bar"]
+      };
+
+      modeLabel.textContent = labels[mode][0];
+      modeHintLabel.textContent = speedMode === "slow" ? "Calm mode" : "Play mode";
+      hintText.textContent = labels[mode][1];
+
+      progressWrap.style.display = mode === "teamProgress" ? "block" : "none";
+    }
+
+    function startMode(mode) {
+      currentMode = mode;
+      homeScreen.classList.remove("active");
+      playScreen.classList.add("active");
+      clearAllArrays();
+      setModeUI(mode);
+
+      if (mode === "drift") {
+        createDrifters();
+      }
+
+      draw();
+    }
+
+    function goHome() {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+      currentMode = null;
+      clearAllArrays();
+      playScreen.classList.remove("active");
+      homeScreen.classList.add("active");
+    }
+
+    function resetScene() {
+      clearAllArrays();
+      if (currentMode === "drift") {
+        createDrifters();
+      }
+    }
+
+    function toggleSpeed() {
+      speedMode = speedMode === "slow" ? "fast" : "slow";
+      speedBtn.textContent = speedMode === "slow" ? "Slow" : "Fast";
+      modeHintLabel.textContent = speedMode === "slow" ? "Calm mode" : "Play mode";
+
+      if (currentMode === "drift") {
+        createDrifters();
+      }
+
+      focusDot.vx = speedMode === "slow" ? Math.sign(focusDot.vx || 1) * 1.1 : Math.sign(focusDot.vx || 1) * 2.2;
+      focusDot.vy = speedMode === "slow" ? Math.sign(focusDot.vy || 1) * 0.85 : Math.sign(focusDot.vy || 1) * 1.6;
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      soundBtn.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+    }
+
+    function playSoftTone(freq = 520, duration = 0.08, volume = 0.02) {
+      if (!soundOn) return;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ac = new AudioContextClass();
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      const now = ac.currentTime;
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start(now);
+      osc.stop(now + duration);
+    }
+
+    function pointerPos(e) {
+      if (e.touches && e.touches[0]) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function createRipple(x, y, size = null, alpha = 0.28) {
+      ripples.push({
+        x,
+        y,
+        r: 6,
+        maxR: size || (speedMode === "slow" ? 120 : 170),
+        alpha,
+        color: randomColor(1)
+      });
+    }
+
+    function createTrailPoint(x, y, mirror = false) {
+      const color = randomColor(0.5);
+      trails.push({
+        x,
+        y,
+        life: 1,
+        size: speedMode === "slow" ? 20 : 15,
+        color
+      });
+
+      if (mirror) {
+        trails.push({
+          x: w - x,
+          y,
+          life: 1,
+          size: speedMode === "slow" ? 20 : 15,
+          color
+        });
+      }
+    }
+
+    function createBurst(x, y, count = 12) {
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.2;
+        const speed = (speedMode === "slow" ? 0.8 : 1.6) + Math.random() * (speedMode === "slow" ? 0.6 : 1.2);
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size: 4 + Math.random() * 8,
+          life: 1,
+          color: randomColor(0.7)
+        });
+      }
+    }
+
+    function createDrifters() {
+      drifters = [];
+      const count = speedMode === "slow" ? 10 : 16;
+      for (let i = 0; i < count; i++) {
+        drifters.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 28 + Math.random() * 28,
+          vx: (Math.random() - 0.5) * (speedMode === "slow" ? 0.35 : 0.8),
+          vy: (Math.random() - 0.5) * (speedMode === "slow" ? 0.35 : 0.8),
+          color: softPalette[Math.floor(Math.random() * softPalette.length)]
+        });
+      }
+    }
+
+    function addSoakBlob(x, y) {
+      soakBlobs.push({
+        x,
+        y,
+        r: 10,
+        maxR: speedMode === "slow" ? 170 : 220,
+        color: softPalette[Math.floor(Math.random() * softPalette.length)],
+        life: 1
+      });
+    }
+
+    function addProgress(amount = 6) {
+      progressValue += amount;
+      if (progressValue > 100) progressValue = 100;
+      progressBar.style.width = progressValue + "%";
+      if (progressValue >= 100) {
+        createBurst(w / 2, h / 2, 28);
+        playSoftTone(740, 0.15, 0.03);
+        progressValue = 0;
+        setTimeout(() => {
+          progressBar.style.width = "0%";
+        }, 180);
+      }
+    }
+
+    function handleStart(e) {
+      if (!currentMode) return;
+      e.preventDefault();
+      pointerDown = true;
+      const p = pointerPos(e);
+      lastX = p.x;
+      lastY = p.y;
+      interactAt(p.x, p.y, true);
+    }
+
+    function handleMove(e) {
+      if (!currentMode || !pointerDown) return;
+      e.preventDefault();
+      const p = pointerPos(e);
+      interactAt(p.x, p.y, false);
+      lastX = p.x;
+      lastY = p.y;
+    }
+
+    function handleEnd() {
+      pointerDown = false;
+    }
+
+    canvas.addEventListener("mousedown", handleStart);
+    canvas.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleEnd);
+
+    canvas.addEventListener("touchstart", handleStart, { passive: false });
+    canvas.addEventListener("touchmove", handleMove, { passive: false });
+    window.addEventListener("touchend", handleEnd);
+
+    function interactAt(x, y, isStart) {
+      switch (currentMode) {
+        case "trail":
+          createTrailPoint(x, y, false);
+          if (!isStart) {
+            createTrailPoint((x + lastX) / 2, (y + lastY) / 2, false);
+          }
+          playSoftTone(520, 0.05, 0.012);
+          break;
+
+        case "ripples":
+          createRipple(x, y);
+          playSoftTone(480, 0.09, 0.015);
+          break;
+
+        case "drift":
+          for (const d of drifters) {
+            const dx = d.x - x;
+            const dy = d.y - y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 150) {
+              d.vx += dx / 600;
+              d.vy += dy / 600;
+            }
+          }
+          createRipple(x, y, 70, 0.12);
+          playSoftTone(430, 0.05, 0.01);
+          break;
+
+        case "symmetry":
+          createTrailPoint(x, y, true);
+          if (!isStart) {
+            createTrailPoint((x + lastX) / 2, (y + lastY) / 2, true);
+          }
+          playSoftTone(560, 0.05, 0.012);
+          break;
+
+        case "breathe":
+          createRipple(x, y, 80, 0.14);
+          playSoftTone(460, 0.08, 0.012);
+          break;
+
+        case "soak":
+          addSoakBlob(x, y);
+          playSoftTone(600, 0.07, 0.014);
+          break;
+
+        case "focus":
+          focusDot.x = x;
+          focusDot.y = y;
+          createRipple(x, y, 50, 0.14);
+          playSoftTone(690, 0.07, 0.012);
+          break;
+
+        case "groupTap":
+          createBurst(x, y, speedMode === "slow" ? 12 : 20);
+          createRipple(x, y, speedMode === "slow" ? 90 : 140, 0.18);
+          playSoftTone(640, 0.09, 0.02);
+          break;
+
+        case "teamProgress":
+          createBurst(x, y, 10);
+          addProgress(speedMode === "slow" ? 5 : 8);
+          playSoftTone(710, 0.07, 0.018);
+          break;
+      }
+    }
+
+    function updateParticles() {
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= speedMode === "slow" ? 0.012 : 0.02;
+        p.size *= 0.992;
+      });
+      particles = particles.filter(p => p.life > 0.02 && p.size > 0.6);
+    }
+
+    function drawParticles() {
+      for (const p of particles) {
+        ctx.beginPath();
+        ctx.fillStyle = p.color.replace(/[\d.]+\)$/g, `${Math.max(0, p.life * 0.7)})`);
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function updateRipples() {
+      ripples.forEach(r => {
+        r.r += speedMode === "slow" ? 1.2 : 2.2;
+        r.alpha -= speedMode === "slow" ? 0.007 : 0.012;
+      });
+      ripples = ripples.filter(r => r.alpha > 0.01 && r.r < r.maxR);
+    }
+
+    function drawRipples() {
+      for (const r of ripples) {
+        ctx.beginPath();
+        ctx.strokeStyle = rgbaFromHex(r.color, r.alpha);
+        ctx.lineWidth = 2;
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    function rgbaFromHex(hex, alpha) {
+      const c = hexToRgb(hex);
+      return `rgba(${c.r},${c.g},${c.b},${alpha})`;
+    }
+
+    function updateTrails() {
+      trails.forEach(t => {
+        t.life -= speedMode === "slow" ? 0.015 : 0.03;
+        t.size *= 0.994;
+      });
+      trails = trails.filter(t => t.life > 0.03);
+    }
+
+    function drawTrails() {
+      for (const t of trails) {
+        ctx.beginPath();
+        const rgb = extractRgba(t.color);
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${Math.max(0, t.life * 0.6)})`;
+        ctx.arc(t.x, t.y, t.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function extractRgba(rgba) {
+      const m = rgba.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+      if (!m) return { r: 255, g: 255, b: 255 };
+      return { r: m[1], g: m[2], b: m[3] };
+    }
+
+    function updateDrifters() {
+      for (const d of drifters) {
+        d.x += d.vx;
+        d.y += d.vy;
+
+        if (d.x - d.r < 0 || d.x + d.r > w) d.vx *= -1;
+        if (d.y - d.r < 0 || d.y + d.r > h) d.vy *= -1;
+
+        d.vx *= 0.999;
+        d.vy *= 0.999;
+      }
+    }
+
+    function drawDrifters() {
+      for (const d of drifters) {
+        ctx.beginPath();
+        ctx.fillStyle = d.color;
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function updateSoak() {
+      soakBlobs.forEach(b => {
+        b.r += speedMode === "slow" ? 2.1 : 3.6;
+        b.life -= speedMode === "slow" ? 0.004 : 0.007;
+      });
+      soakBlobs = soakBlobs.filter(b => b.life > 0.03 && b.r < b.maxR);
+    }
+
+    function drawSoak() {
+      for (const b of soakBlobs) {
+        ctx.beginPath();
+        const rgb = extractRgba(b.color);
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${b.life * 0.85})`;
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function updateFocusDot() {
+      focusDot.x += focusDot.vx;
+      focusDot.y += focusDot.vy;
+
+      if (focusDot.x < focusDot.r || focusDot.x > w - focusDot.r) {
+        focusDot.vx *= -1;
+      }
+      if (focusDot.y < focusDot.r || focusDot.y > h - focusDot.r) {
+        focusDot.vy *= -1;
+      }
+    }
+
+    function drawFocusDot() {
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(74,168,255,0.85)";
+      ctx.arc(focusDot.x, focusDot.y, focusDot.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(74,168,255,0.24)";
+      ctx.lineWidth = 10;
+      ctx.arc(focusDot.x, focusDot.y, focusDot.r + 14, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    function drawBreathe() {
+      breathePhase += speedMode === "slow" ? 0.018 : 0.032;
+      const r = 60 + (Math.sin(breathePhase) + 1) * (speedMode === "slow" ? 48 : 38);
+      const alpha = 0.14 + (Math.sin(breathePhase) + 1) * 0.06;
+
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(142,125,255,${alpha})`;
+      ctx.arc(w / 2, h / 2, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(142,125,255,0.45)";
+      ctx.lineWidth = 4;
+      ctx.arc(w / 2, h / 2, r + 12, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(70,70,95,0.7)";
+      ctx.font = "700 26px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(Math.sin(breathePhase) > 0 ? "Breathe in" : "Breathe out", w / 2, h / 2 + 8);
+    }
+
+    function drawSymmetryLine() {
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(0,0,0,0.08)";
+      ctx.lineWidth = 2;
+      ctx.moveTo(w / 2, 0);
+      ctx.lineTo(w / 2, h);
+      ctx.stroke();
+    }
+
+    function drawBackgroundGlow() {
+      const grad = ctx.createRadialGradient(w / 2, h / 2, 80, w / 2, h / 2, Math.max(w, h) * 0.7);
+      grad.addColorStop(0, "rgba(255,255,255,0.35)");
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function drawSceneByMode() {
+      if (currentMode === "trail") {
+        updateTrails();
+        drawTrails();
+      }
+
+      if (currentMode === "ripples") {
+        updateRipples();
+        drawRipples();
+      }
+
+      if (currentMode === "drift") {
+        updateDrifters();
+        drawDrifters();
+        updateRipples();
+        drawRipples();
+      }
+
+      if (currentMode === "symmetry") {
+        drawSymmetryLine();
+        updateTrails();
+        drawTrails();
+      }
+
+      if (currentMode === "breathe") {
+        drawBreathe();
+        updateRipples();
+        drawRipples();
+      }
+
+      if (currentMode === "soak") {
+        updateSoak();
+        drawSoak();
+      }
+
+      if (currentMode === "focus") {
+        updateFocusDot();
+        drawFocusDot();
+        updateRipples();
+        drawRipples();
+      }
+
+      if (currentMode === "groupTap") {
+        updateParticles();
+        drawParticles();
+        updateRipples();
+        drawRipples();
+      }
+
+      if (currentMode === "teamProgress") {
+        updateParticles();
+        drawParticles();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      drawBackgroundGlow();
+      drawSceneByMode();
+      animationId = requestAnimationFrame(draw);
+    }
+
+    draw();
+  </script>
+</body>
+</html>
