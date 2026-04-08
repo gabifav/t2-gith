@@ -433,23 +433,27 @@ function playPianoNote(freq) {
   const gain = ac.createGain();
   const filter = ac.createBiquadFilter();
 
-  osc.type = "triangle";
-  osc.frequency.setValueAtTime(freq, now);
+  // softer tone
+  osc.type = "sine"; 
 
+  // slightly lower pitch = calmer
+  osc.frequency.setValueAtTime(freq * 0.9, now);
+
+  // warm filter
   filter.type = "lowpass";
-  filter.frequency.setValueAtTime(1800, now);
+  filter.frequency.setValueAtTime(1200, now);
 
+  // VERY soft volume + slow fade
   gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.05, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.02, now + 0.08);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+  gain.gain.exponentialRampToValueAtTime(0.02, now + 0.08); // softer attack
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2); // long fade
 
   osc.connect(filter);
   filter.connect(gain);
   gain.connect(ac.destination);
 
   osc.start(now);
-  osc.stop(now + 0.85);
+  osc.stop(now + 1.3);
 }
 
 function playNextDriftNote() {
