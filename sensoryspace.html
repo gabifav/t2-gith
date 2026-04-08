@@ -595,10 +595,15 @@ function playNextDriftNote() {
       focusDot.vy = speedMode === "slow" ? Math.sign(focusDot.vy || 1) * 0.85 : Math.sign(focusDot.vy || 1) * 1.6;
     }
 
-    function toggleSound() {
-      soundOn = !soundOn;
-      soundBtn.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
-    }
+   function toggleSound() {
+  soundOn = !soundOn;
+
+  if (soundOn) {
+    ensureAudio();
+  }
+
+  soundBtn.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+}
 
     function playSoftTone(freq = 520, duration = 0.08, volume = 0.02) {
       if (!soundOn) return;
@@ -882,18 +887,42 @@ function playNextDriftNote() {
       return { r: m[1], g: m[2], b: m[3] };
     }
 
-    function updateDrifters() {
-      for (const d of drifters) {
-        d.x += d.vx;
-        d.y += d.vy;
+   function updateDrifters() {
+  for (const d of drifters) {
+    d.x += d.vx;
+    d.y += d.vy;
 
-        if (d.x - d.r < 0 || d.x + d.r > w) d.vx *= -1;
-        if (d.y - d.r < 0 || d.y + d.r > h) d.vy *= -1;
+    let bounced = false;
 
-        d.vx *= 0.999;
-        d.vy *= 0.999;
-      }
+    if (d.x - d.r < 0) {
+      d.x = d.r;
+      d.vx = Math.abs(d.vx);
+      bounced = true;
+    } else if (d.x + d.r > w) {
+      d.x = w - d.r;
+      d.vx = -Math.abs(d.vx);
+      bounced = true;
     }
+
+    if (d.y - d.r < 0) {
+      d.y = d.r;
+      d.vy = Math.abs(d.vy);
+      bounced = true;
+    } else if (d.y + d.r > h) {
+      d.y = h - d.r;
+      d.vy = -Math.abs(d.vy);
+      bounced = true;
+    }
+
+    if (bounced) {
+      playNextDriftNote();
+      createRipple(d.x, d.y, 55, 0.10);
+    }
+
+    d.vx *= 0.999;
+    d.vy *= 0.999;
+  }
+}
 
     function drawDrifters() {
       for (const d of drifters) {
