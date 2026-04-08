@@ -270,63 +270,29 @@
           Choose a calm mode to explore
         </div>
 
-        <div class="mode-grid">
-          <button class="mode-card" onclick="startMode('trail')">
-            <div class="mode-emoji">🖍️</div>
-            <div class="mode-title">Trail Drawing</div>
-            <div class="mode-desc">Draw glowing lines that gently fade away.</div>
-          </button>
+       <div style="text-align:center; margin-top:30px;">
 
-          <button class="mode-card" onclick="startMode('ripples')">
-            <div class="mode-emoji">🌊</div>
-            <div class="mode-title">Ripple World</div>
-            <div class="mode-desc">Tap anywhere and soft ripples spread out.</div>
-          </button>
+  <button onclick="prevMode()">←</button>
 
-          <button class="mode-card" onclick="startMode('drift')">
-            <div class="mode-emoji">☁️</div>
-            <div class="mode-title">Drift Mode</div>
-            <div class="mode-desc">Float and nudge shapes around the screen.</div>
-          </button>
+  <div id="modeDisplay" style="margin:20px; font-size:24px;">
+    🌊 Ripple World
+  </div>
 
-          <button class="mode-card" onclick="startMode('symmetry')">
-            <div class="mode-emoji">🪞</div>
-            <div class="mode-title">Symmetry Draw</div>
-            <div class="mode-desc">Draw on one side and watch it mirror.</div>
-          </button>
+  <div id="modeDesc" style="color:#666;">
+    Tap to create soft ripples
+  </div>
 
-          <button class="mode-card" onclick="startMode('breathe')">
-            <div class="mode-emoji">🫧</div>
-            <div class="mode-title">Breathe With Me</div>
-            <div class="mode-desc">Follow a slow breathing circle.</div>
-          </button>
+  <br><br>
 
-          <button class="mode-card" onclick="startMode('soak')">
-            <div class="mode-emoji">🎨</div>
-            <div class="mode-title">Colour Soak</div>
-            <div class="mode-desc">Tap to softly spread colour across the space.</div>
-          </button>
+  <button onclick="nextMode()">→</button>
 
-          <button class="mode-card" onclick="startMode('focus')">
-            <div class="mode-emoji">🎯</div>
-            <div class="mode-title">Focus Dot</div>
-            <div class="mode-desc">Watch and follow one gentle moving dot.</div>
-          </button>
+  <br><br>
 
-          <button class="mode-card" onclick="startMode('groupTap')">
-            <div class="mode-emoji">🤝</div>
-            <div class="mode-title">Group Tap</div>
-            <div class="mode-desc">Every tap creates a shared reaction together.</div>
-          </button>
+  <button onclick="openSelectedMode()" style="padding:14px 20px; font-size:18px;">
+    Open
+  </button>
 
-          <button class="mode-card" onclick="startMode('teamProgress')">
-            <div class="mode-emoji">⭐</div>
-            <div class="mode-title">Team Progress</div>
-            <div class="mode-desc">Each tap fills a shared progress bar.</div>
-          </button>
-        </div>
-      </div>
-    </div>
+</div>
 
     <div id="playScreen" class="screen">
       <canvas id="canvas"></canvas>
@@ -373,6 +339,38 @@
     const soundBtn = document.getElementById("soundBtn");
     const progressWrap = document.getElementById("progressWrap");
     const progressBar = document.getElementById("progressBar");
+   
+    const modes = [
+  { id: "trail", name: "🖍️ Trail Drawing", desc: "Draw glowing lines" },
+  { id: "ripples", name: "🌊 Ripple World", desc: "Tap to create ripples" },
+  { id: "drift", name: "☁️ Drift Mode", desc: "Floating shapes" },
+  { id: "symmetry", name: "🪞 Symmetry Draw", desc: "Mirror drawing" },
+  { id: "breathe", name: "🫧 Breathe", desc: "Follow breathing" },
+  { id: "soak", name: "🎨 Colour Soak", desc: "Spread colour" }
+];
+
+    function updateModeDisplay() {
+  const mode = modes[currentModeIndex];
+
+  document.getElementById("modeDisplay").innerText = mode.name;
+  document.getElementById("modeDesc").innerText = mode.desc;
+}
+
+function nextMode() {
+  currentModeIndex = (currentModeIndex + 1) % modes.length;
+  updateModeDisplay();
+}
+
+function prevMode() {
+  currentModeIndex = (currentModeIndex - 1 + modes.length) % modes.length;
+  updateModeDisplay();
+}
+
+function openSelectedMode() {
+  startMode(modes[currentModeIndex].id);
+}
+    
+let currentModeIndex = 0;
 
     let w = 0;
     let h = 0;
@@ -1157,6 +1155,8 @@ function playNextDriftNote() {
     }
 
     draw();
+ 
+    updateModeDisplay();
   </script>
 </body>
 </html>
