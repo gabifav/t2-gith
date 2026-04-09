@@ -469,7 +469,9 @@
 
         card.innerHTML = `
           <div class="top-row">
-            <div class="title">Group ${group.name}</div>
+            <div class="title">
+  ${group.name === "Pick up Only" ? group.name : "Group " + group.name}
+</div>
             <div class="status ${isDone ? "done" : ""}">
               ${isDone ? "DONE ✅" : "In Progress"}
             </div>
