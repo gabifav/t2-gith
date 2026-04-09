@@ -171,6 +171,7 @@
     .g5 .bar  { background: #ef6b8f; }
     .g6a .bar { background: #9b59b6; }
     .g6b .bar { background: #ff8c42; }
+    .gpick-up-only .bar { background: #037f4c; }
 
     .controls {
       display: grid;
@@ -301,7 +302,7 @@
   </div>
 
   <script>
-    const groupNames = ["1", "2", "3", "4", "5", "6A", "6B"];
+    const groupNames = ["1", "2", "3", "4", "5", "6A", "6B", "Pick up Only"];
 
     const defaultGroups = [
       { name: "1",  done: 0, total: 5, completedPlayed: false },
@@ -310,7 +311,8 @@
       { name: "4",  done: 0, total: 5, completedPlayed: false },
       { name: "5",  done: 0, total: 5, completedPlayed: false },
       { name: "6A", done: 0, total: 5, completedPlayed: false },
-      { name: "6B", done: 0, total: 5, completedPlayed: false }
+      { name: "6B", done: 0, total: 5, completedPlayed: false },
+      { name: "Pick up Only", done: 0, total: 5, completedPlayed: false }
     ];
 
     let saved = null;
