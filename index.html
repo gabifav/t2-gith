@@ -7,7 +7,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
   <title>SLES Packing Tracker</title>
-  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png" />
   <style>
     * {
       box-sizing: border-box;
@@ -164,11 +164,11 @@
       transition: width 0.3s ease;
     }
 
-    .g1 .bar  { background: #8e7dff; }
-    .g2 .bar  { background: #4aa8ff; }
-    .g3 .bar  { background: #49c27d; }
-    .g4 .bar  { background: #f0b429; }
-    .g5 .bar  { background: #ef6b8f; }
+    .g1 .bar { background: #8e7dff; }
+    .g2 .bar { background: #4aa8ff; }
+    .g3 .bar { background: #49c27d; }
+    .g4 .bar { background: #f0b429; }
+    .g5 .bar { background: #ef6b8f; }
     .g6a .bar { background: #9b59b6; }
     .g6b .bar { background: #ff8c42; }
     .pick-up-only .bar { background: #037f4c; }
@@ -196,7 +196,7 @@
       transform: scale(0.98);
     }
 
-    .plus  { background: #e3edff; }
+    .plus { background: #e3edff; }
     .minus { background: #ffe3e3; }
     .reset { background: #efefef; }
 
@@ -276,7 +276,10 @@
       h1 { font-size: 24px; }
       .title { font-size: 20px; }
       .fraction { font-size: 24px; }
-      button.action, .save-btn, .reset-all-btn {
+
+      button.action,
+      .save-btn,
+      .reset-all-btn {
         font-size: 16px;
         padding: 13px 8px;
       }
@@ -305,13 +308,14 @@
     const groupNames = ["1", "2", "3", "4", "5", "6A", "6B", "Pick up Only"];
 
     const defaultGroups = [
-      { name: "1",  done: 0, total: 5, completedPlayed: false },
-      { name: "2",  done: 0, total: 8, completedPlayed: false },
-      { name: "3",  done: 0, total: 5, completedPlayed: false },
-      { name: "4",  done: 0, total: 5, completedPlayed: false },
-      { name: "5",  done: 0, total: 5, completedPlayed: false },
+      { name: "1", done: 0, total: 5, completedPlayed: false },
+      { name: "2", done: 0, total: 8, completedPlayed: false },
+      { name: "3", done: 0, total: 5, completedPlayed: false },
+      { name: "4", done: 0, total: 5, completedPlayed: false },
+      { name: "5", done: 0, total: 5, completedPlayed: false },
       { name: "6A", done: 0, total: 5, completedPlayed: false },
       { name: "6B", done: 0, total: 5, completedPlayed: false },
+      { name: "Pick up Only", done: 0, total: 5, completedPlayed: false }
     ];
 
     let saved = null;
@@ -361,7 +365,9 @@
     }
 
     function groupClass(name) {
-      return "g" + String(name).toLowerCase();
+      const lower = String(name).toLowerCase().trim();
+      if (lower === "pick up only") return "pick-up-only";
+      return "g" + lower.replace(/\s+/g, "").replace(/[^a-z0-9-]/g, "");
     }
 
     function getPercent(done, total) {
@@ -432,6 +438,21 @@
       }
     }
 
+    function showSavedMessage(text = "Saved!") {
+      const msg = document.getElementById("saveMessage");
+      msg.textContent = text;
+      msg.classList.add("show");
+      clearTimeout(showSavedMessage.timeoutId);
+      showSavedMessage.timeoutId = setTimeout(() => {
+        msg.classList.remove("show");
+      }, 1200);
+    }
+
+    function saveData(showMessage = false) {
+      localStorage.setItem("trackerData", JSON.stringify(groups));
+      if (showMessage) showSavedMessage();
+    }
+
     function render() {
       const app = document.getElementById("app");
       app.innerHTML = "";
@@ -493,6 +514,7 @@
       render();
       const cards = document.querySelectorAll(".card");
       maybeCelebrate(group, cards[index]);
+      saveData();
     }
 
     function updateTotal(index, value) {
@@ -506,12 +528,14 @@
       }
 
       render();
+      saveData();
     }
 
     function resetGroup(index) {
       groups[index].done = 0;
       groups[index].completedPlayed = false;
       render();
+      saveData();
     }
 
     function resetAll() {
@@ -520,13 +544,7 @@
         group.completedPlayed = false;
       });
       render();
-    }
-
-    function saveData() {
-      localStorage.setItem("trackerData", JSON.stringify(groups));
-      const msg = document.getElementById("saveMessage");
-      msg.classList.add("show");
-      setTimeout(() => msg.classList.remove("show"), 1200);
+      saveData(true);
     }
 
     render();
