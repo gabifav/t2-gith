@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Together2 Skill Tree</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+    --hope:#C7D540;
+    --gratitude:#008B65;
+    --serenity:#00B3CC;
+    --joy:#EC694A;
+    --light:#FDD500;
+    --pride:#6561A8;
+    --bg:#f7faf8;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Comfortaa',sans-serif;
+    background:var(--bg);
+    min-height:100vh;
+    padding:40px;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:50px;
+}
+
+.header h1{
+    color:var(--gratitude);
+    font-size:2.5rem;
+}
+
+.header p{
+    margin-top:10px;
+    color:#555;
+}
+
+.tree{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:50px;
+}
+
+.row{
+    display:flex;
+    justify-content:center;
+    gap:50px;
+    flex-wrap:wrap;
+}
+
+.skill{
+    width:220px;
+    min-height:140px;
+    background:white;
+    border-radius:25px;
+    padding:20px;
+    text-align:center;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+    transition:.3s;
+    position:relative;
+}
+
+.skill:hover{
+    transform:translateY(-5px);
+}
+
+.skill h3{
+    margin-bottom:10px;
+}
+
+.skill p{
+    font-size:.85rem;
+    color:#666;
+    margin-bottom:10px;
+}
+
+.locked{
+    opacity:.45;
+    border:3px dashed #bbb;
+}
+
+.unlocked{
+    opacity:1;
+    border:3px solid var(--hope);
+}
+
+.badge{
+    font-size:2rem;
+    margin-bottom:10px;
+}
+
+.unlock-btn{
+    background:var(--gratitude);
+    color:white;
+    border:none;
+    padding:8px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    font-family:'Comfortaa';
+}
+
+.unlock-btn:hover{
+    opacity:.9;
+}
+
+.line{
+    width:4px;
+    height:40px;
+    background:var(--hope);
+}
+
+.stats{
+    max-width:900px;
+    margin:40px auto;
+    background:white;
+    border-radius:25px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+.progress{
+    margin-top:20px;
+    background:#eee;
+    height:25px;
+    border-radius:999px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:linear-gradient(
+        90deg,
+        var(--hope),
+        var(--serenity)
+    );
+    transition:.5s;
+}
+
+.level{
+    margin-top:15px;
+    font-weight:700;
+    color:var(--pride);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>🌱 Gabi's Skill Tree</h1>
+    <p>Together2 Skills & Achievements</p>
+</div>
+
+<div class="stats">
+    <h2>Progress</h2>
+
+    <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="level" id="levelText">
+        Seed 🌱
+    </div>
+</div>
+
+<div class="tree">
+
+    <div class="row">
+
+        <div class="skill unlocked">
+            <div class="badge">💬</div>
+            <h3>Communication</h3>
+            <p>Greeting others and active listening.</p>
+        </div>
+
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+
+        <div class="skill unlocked">
+            <div class="badge">📦</div>
+            <h3>Packing</h3>
+            <p>Good in the Hood packing skills.</p>
+        </div>
+
+        <div class="skill locked" id="teamwork">
+            <div class="badge">🤝</div>
+            <h3>Teamwork</h3>
+            <p>Working effectively with others.</p>
+            <button class="unlock-btn"
+                onclick="unlockSkill('teamwork')">
+                Unlock
+            </button>
+        </div>
+
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+
+        <div class="skill locked" id="leadership">
+            <div class="badge">⭐</div>
+            <h3>Leadership</h3>
+            <p>Supporting and guiding others.</p>
+            <button class="unlock-btn"
+                onclick="unlockSkill('leadership')">
+                Unlock
+            </button>
+        </div>
+
+        <div class="skill locked" id="community">
+            <div class="badge">🏘️</div>
+            <h3>Community</h3>
+            <p>Engaging with Together2 activities.</p>
+            <button class="unlock-btn"
+                onclick="unlockSkill('community')">
+                Unlock
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function updateProgress(){
+
+    const skills =
+        document.querySelectorAll('.skill');
+
+    const unlocked =
+        document.querySelectorAll('.unlocked');
+
+    const percent =
+        (unlocked.length / skills.length) * 100;
+
+    document.getElementById("progressBar")
+        .style.width = percent + "%";
+
+    let level = "Seed 🌱";
+
+    if(percent >= 25) level = "Growing 🌿";
+    if(percent >= 50) level = "Thriving 🌳";
+    if(percent >= 100) level = "Community Champion ⭐";
+
+    document.getElementById("levelText")
+        .innerText = level;
+
+}
+
+function unlockSkill(id){
+
+    const card =
+        document.getElementById(id);
+
+    card.classList.remove("locked");
+    card.classList.add("unlocked");
+
+    const button =
+        card.querySelector("button");
+
+    if(button){
+        button.remove();
+    }
+
+    card.innerHTML += `
+        <p style="color:#008B65;font-weight:bold;">
+            ✓ Unlocked
+        </p>
+    `;
+
+    updateProgress();
+
+}
+
+updateProgress();
+
+</script>
+
+</body>
+</html>
